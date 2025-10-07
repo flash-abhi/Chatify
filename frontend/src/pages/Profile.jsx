@@ -41,6 +41,7 @@ const Profile = () => {
             }
             console.log(result.data);
             toast.success("Profile Updated !!")
+            navigate("/");
             setLoading(false);
 
         } catch (error) {

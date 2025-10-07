@@ -28,7 +28,7 @@ const SignUp = () => {
             setPassword("");
             setUserName("");
             toast.success("SignUp successfull !!");
-            navigate("/login");
+            navigate("/profile");
         } catch (error) {
             console.log(error);
             setLoading(false);

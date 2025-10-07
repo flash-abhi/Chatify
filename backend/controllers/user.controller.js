@@ -22,7 +22,7 @@ export const editProfile = async (req,res) => {
         image = await uploadOnCloudinary(req.file.path)
        }
 
-       let user = await User.findByIdAndUpdate(req.userId,{name,description,image});
+       let user = await User.findByIdAndUpdate(req.userId,{name,description,image},{new:true});
        if(!user) {
         return res.status(400).json({message: "User not found"});
        }
@@ -31,5 +31,19 @@ export const editProfile = async (req,res) => {
 
     } catch (error) {
         console.log(error);
+        return res.status(500).json({message: `Profile error: ${error}`});
+    }
+}
+
+export const getOtherUsers = async (req,res) => {
+    try {
+        let users = await User.find({
+            _id: {$ne : req.userId}
+        }).select("-password")
+
+        res.status(200).json(users)
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message: `get other user error: ${error}`});
     }
 }
