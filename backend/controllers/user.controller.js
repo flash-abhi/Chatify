@@ -51,7 +51,7 @@ export const getOtherUsers = async (req,res) => {
 export const search = async(req,res) => {
     try {
         let {query} = req.query;
-        console.log(query);
+        // console.log(query);
         if(!query) {
             return res.status(400).json({message: "query is required"});
         }
