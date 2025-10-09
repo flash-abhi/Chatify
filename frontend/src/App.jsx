@@ -11,7 +11,7 @@ import Profile from './pages/Profile';
 import getOherUsers from './customhooks/getOherUsers';
 import { useEffect } from 'react';
 import {io} from "socket.io-client";
-export const serverUrl = "https://chatify-backend-zk5k.onrender.com"
+export const serverUrl = "https://chatify-backend-new.onrender.com"
 function App() {
   useCurrentUser();
   const dispatch = useDispatch();
