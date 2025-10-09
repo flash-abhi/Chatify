@@ -6,7 +6,7 @@ let app = express();
 const server = http.createServer(app);
 const io =  new Server(server,{
     cors: {
-        origin: "https://chatify-frontend-rxgg.onrender.com"
+        origin: "https://chatify-frontend-new.onrender.com"
     }
 });
 const userSocketMap = {};
