@@ -11,7 +11,7 @@ const getOherUsers = () => {
     const fetchUser = async () => {
         try {
             const result = await axios.get(serverUrl+"/api/user/others",{withCredentials:true});
-            dispatch(setOtherUsers(result.data));
+            dispatch(setOtherUsers(result?.data));
         } catch (error) {
             console.log(error);
         }

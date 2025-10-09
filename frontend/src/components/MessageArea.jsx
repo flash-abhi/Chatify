@@ -5,20 +5,62 @@ import { setSelectedUser, userSelector } from "../redux/userSlice";
 import logo from "../assets/logo_icon.png";
 import { RiEmojiStickerLine } from "react-icons/ri";
 import { FaImages } from "react-icons/fa6";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EmojiPicker from "emoji-picker-react";
+import SenderMessage from "./SenderMessage";
+import ReceiverMessage from "./ReceiverMessage";
+import axios from "axios";
+import { serverUrl } from './../App';
+import { messageSelector, setMessages } from "../redux/messageSlice";
 
 const MessageArea = () => {
-  const { selectedUser } = useSelector(userSelector);
+  const { selectedUser ,userData, socket} = useSelector(userSelector);
   const dispatch = useDispatch();
+  const {messages} = useSelector(messageSelector);
   const [showPicker, setShowPicker] = useState(false);
   const [input, setInput] = useState("");
+  const [frontendImage,setFrontendImage] = useState(null);
+  let [backendImage,setBackendImage] = useState("");
+  const image = useRef();
+  const handleSendMessage = async(e) => {
+    e.preventDefault();
+    if(input.length == 0 && backendImage == null){
+      return null;
+    }
+    try {
+      let formData = new FormData();
+      formData.append("message",input)
+      if(backendImage){
+        formData.append("image",backendImage)
+      }
+      setInput("");
+      setFrontendImage(null);
+      setBackendImage("");
 
+      let result = await axios.post(`${serverUrl}/api/message/send/${selectedUser._id}`,formData,{withCredentials:true});
+      dispatch(setMessages([...messages,result?.data] ))
+    } catch (error) {
+      setInput("");
+      setFrontendImage(null);
+      setBackendImage("");
+      console.log(error)
+    }
+  }
   const onEmojiClick = (emojiData) => {
     setInput((prevInput) => prevInput + emojiData.emoji);
     setShowPicker(false); // ✅ optional: close picker after selecting emoji
   };
-
+const handleImage = (e) => {
+  let file = e.target.files[0];
+  setBackendImage(file);
+  setFrontendImage(URL.createObjectURL(file))
+}
+useEffect(() => {
+socket.on("newMessage",(message) =>{
+  dispatch(setMessages([...messages,message]))
+});
+return () => socket.off("newMessage")
+},[messages,setMessages])
   return selectedUser ? (
     <div
       className={`lg:w-[70%] w-full ${
@@ -45,7 +87,7 @@ const MessageArea = () => {
         </div>
 
         {/* Emoji Picker */}
-        <div className="w-full h-[450px]">
+        <div className="w-full lg:h-[420px] sm:h-[430px] md:h-[430px] h-[80vh] flex flex-col pt-[30px] px-[20px] py-[30px] overflow-y-scroll no-scrollbar">
           {showPicker && (
             <div className="absolute bottom-[100px] left-[20px] z-50">
               <EmojiPicker
@@ -56,22 +98,28 @@ const MessageArea = () => {
               />
             </div>
           )}
+          {messages && messages?.map((msg,i) => (
+            msg?.sender == userData?._id? <SenderMessage key={i} image={msg.image} message={msg.message} />: <ReceiverMessage key={i} image={msg.image} message={msg.message} />
+          ) )}
         </div>
       </div>
 
       {/* Message Input */}
-      <div className="w-full lg:w-[70%] h-[100px] fixed bottom-[0px] flex items-center justify-center rounded-full">
+      <div className="w-full  lg:w-[70%] h-[100px] fixed bottom-[0px] flex items-center justify-center rounded-full">
+
         <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex items-center p-[20px] gap-[10px] w-[95%] lg:w-[75%] h-[50px] bg-[#1797c2] shadow-gray-400 shadow-md rounded-full"
+          onSubmit={handleSendMessage}
+          className="relative flex items-center p-[20px] gap-[10px] w-[95%] lg:w-[75%] h-[50px] bg-[#1797c2] shadow-gray-400 shadow-md rounded-full"
         >
+        <img src={frontendImage} className="absolute shadow-lg w-[80px] bottom-[60px] right-[30px]" alt="" />
           {/* Emoji Button */}
           <div onClick={() => setShowPicker((prev) => !prev)}>
-            <RiEmojiStickerLine className="w-[25px] h-[25px] text-gray-100 cursor-pointer" />
+            <RiEmojiStickerLine className="w-[25px] h-[25px] z-30 text-gray-100 cursor-pointer" />
           </div>
 
           {/* Input Field */}
           <div className="w-full h-[40px] bg-transparent">
+            <input type="file" className="hidden" onChange={handleImage} accept="image/*" ref={image} />
             <input
               type="text"
               value={input}
@@ -83,11 +131,13 @@ const MessageArea = () => {
 
           {/* Image and Send Icons */}
           <div>
-            <FaImages className="w-[25px] h-[25px] text-gray-100 cursor-pointer" />
+            <FaImages className="w-[25px] h-[25px] text-gray-100 cursor-pointer" onClick={() => image.current.click()} />
           </div>
-          <div>
+          {input.length !== 0 || backendImage != null &&
+            <button>
             <IoMdSend className="w-[25px] h-[25px] text-gray-100 cursor-pointer" />
-          </div>
+            </button>
+          }
         </form>
       </div>
     </div>

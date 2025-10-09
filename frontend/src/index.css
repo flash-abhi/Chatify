@@ -9,4 +9,10 @@
   .no-eye::-webkit-clear-button {
     display: none;
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+  }
 }

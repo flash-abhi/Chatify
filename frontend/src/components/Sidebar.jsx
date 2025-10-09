@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  {  useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setOtherUsers, setSelectedUser, setUserData, userSelector } from "../redux/userSlice";
 import emptyProfile from "../assets/avatar_icon.png";
@@ -8,9 +8,10 @@ import { BiLogOutCircle } from "react-icons/bi";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useNavigate } from "react-router-dom";
-
+import { setMessages } from "../redux/messageSlice";
+import greendot from "../assets/green_dot.png";
 const Sidebar = () => {
-  const { userData, otherUsers,selectedUser } = useSelector(userSelector);
+  const { userData, otherUsers,selectedUser,onlineUsers} = useSelector(userSelector);
   const [search, setSearch] = useState(false);
   let dispatch = useDispatch();
   
@@ -20,13 +21,17 @@ const Sidebar = () => {
       let result = await axios.get(serverUrl + "/api/auth/logout", {
         withCredentials: true,
       });
+
       dispatch(setUserData(null));
       dispatch(setOtherUsers(null));
+      dispatch(setMessages(null));
       navigate("/login");
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
-    <div className={`lg:w-[30%] w-full h-full bg-slate-200 lg:block ${!selectedUser? "block":"hidden"}`}>
+    <div className={`lg:w-[30%] w-full h-full overflow-hidden bg-slate-200 lg:block ${!selectedUser? "block":"hidden"}`}>
       <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex justify-center items-center bg-white shadow-gray-500 shadow-md fixed bottom-[20px] left-[10px]">
         <BiLogOutCircle
           className="w-[25px] h-[25px] text-gray-700 cursor-pointer"
@@ -48,7 +53,7 @@ const Sidebar = () => {
           </div>
         </div>
         <div>
-          <div className="w-full flex items-center gap-[20px]">
+          <div className="w-full flex items-center p-4 gap-[20px] overflow-x-auto">
             {!search && (
               <div
                 className="w-[40px] h-[40px] rounded-full overflow-hidden flex justify-center items-center bg-white shadow-gray-500 shadow-md"
@@ -71,20 +76,24 @@ const Sidebar = () => {
                 />
               </form>
             )}
-            {!search && otherUsers?.map((user, i) => {
-              return (
+            {!search && otherUsers?.map((user, i) => 
+                 onlineUsers?.includes(user._id) &&
+                <div className="relative rounded-full">
                 <div
                   key={i}
                   className="w-[40px] h-[40px] rounded-full overflow-hidden flex justify-center items-center shadow-gray-500 shadow-md"
                 >
+                  
                   <img
                     src={user?.image || emptyProfile}
                     className="h-[100%]"
-                    alt=""
                   />
+                  
                 </div>
-              );
-            })}
+                  <span className="w-[10px]  h-[10px] bottom-0 right-0  rounded-full bg-green-400 absolute"></span>
+              </div>
+              )
+            }
           </div>
         </div>
       </div>

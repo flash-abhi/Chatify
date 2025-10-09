@@ -1,5 +1,6 @@
 import Conversation from '../models/conversation.model.js';
 import Message from '../models/message.model.js';
+import { getReceiverSocketId, io } from '../socket/socket.js';
 import { uploadOnCloudinary } from './../config/cloudinary.js';
 export const sendMessage = async (req,res) => {
     try {
@@ -26,6 +27,10 @@ export const sendMessage = async (req,res) => {
             conversation.messages.push(newMessage._id);
             await conversation.save();
         }
+        const receiverSocketId = getReceiverSocketId(receiver);
+        if(receiverSocketId){
+            io.to(receiverSocketId).emit("newMessage",newMessage);
+        }
         return res.status(201).json(newMessage);
     } catch (error) {
         console.log(error);
@@ -37,6 +42,10 @@ export const getMessages = async (req,res) =>{
     try {
         let sender = req.userId;
         let {receiver}  = req.params;
+        // console.log(sender,receiver);
+         if (!receiver && !sender) {
+            return res.status(400).json({ message: "Missing user IDs" });
+        }
          let conversation = await Conversation.findOne({
             participants: {$all : [sender,receiver]}
         }).populate("messages")

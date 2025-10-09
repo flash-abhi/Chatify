@@ -5,15 +5,39 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Home from './pages/Home';
 import useCurrentUser from './customhooks/useCurrentUser';
-import { useSelector } from 'react-redux';
-import { userSelector } from './redux/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setOnlineUsers, setSocket, userSelector } from './redux/userSlice';
 import Profile from './pages/Profile';
 import getOherUsers from './customhooks/getOherUsers';
+import { useEffect } from 'react';
+import {io} from "socket.io-client";
 export const serverUrl = "http://localhost:8001";
 function App() {
   useCurrentUser();
+  const dispatch = useDispatch();
   getOherUsers();
-  const {userData} = useSelector(userSelector);
+  const {userData,socket,onlineUsers} = useSelector(userSelector);
+  useEffect(()=> {
+    if(userData){
+    const socketio = io(`${serverUrl}`,{
+      query:{
+        userId : userData?._id
+      }
+    });
+    dispatch(setSocket(socketio));
+    socketio.on("getOnlineUsers",(users) => {
+      dispatch(setOnlineUsers(users));
+    })
+    return () => socketio.close();
+    
+    }else{
+      if(socket){
+        socket.close();
+        dispatch(setSocket(null))
+      }
+    }
+    
+  },[userData]);  
   return (
     <>
       <ToastContainer/>
