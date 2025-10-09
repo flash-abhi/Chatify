@@ -87,7 +87,7 @@ return () => socket.off("newMessage")
         </div>
 
         {/* Emoji Picker */}
-        <div className="w-full lg:h-[420px] sm:h-[430px] md:h-[430px] h-[80vh] flex flex-col pt-[30px] px-[20px] py-[30px] overflow-y-scroll no-scrollbar">
+        <div className="w-full h-[75%] gap-[20px] flex flex-col pt-[30px] px-[20px] py-[30px] overflow-y-scroll no-scrollbar">
           {showPicker && (
             <div className="absolute bottom-[100px] left-[20px] z-50">
               <EmojiPicker
