@@ -20,7 +20,7 @@ const MessageArea = () => {
   const [showPicker, setShowPicker] = useState(false);
   const [input, setInput] = useState("");
   const [frontendImage,setFrontendImage] = useState(null);
-  let [backendImage,setBackendImage] = useState("");
+  let [backendImage,setBackendImage] = useState(null);
   const image = useRef();
   const handleSendMessage = async(e) => {
     e.preventDefault();
